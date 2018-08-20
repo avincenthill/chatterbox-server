@@ -2,17 +2,16 @@
 
 You should implement your request handler function in this file.
 
-requestHandler is already getting passed to http.createServer()
-in basic-server.js, but it won't work as is.
-
-You'll have to figure out a way to export this function from
-this file and include it in basic-server.js so that it actually works.
-
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
 
+//import memory array
+const memory = require('./memory');
+
 var requestHandler = function(request, response) {
+  console.log('Request received!');
+
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -30,9 +29,6 @@ var requestHandler = function(request, response) {
   console.log(
     'Serving request type ' + request.method + ' for url ' + request.url
   );
-
-  // The outgoing status.
-  var statusCode = 200;
 
   // These headers will allow Cross-Origin Resource Sharing (CORS).
   // This code allows this server to talk to websites that
@@ -52,11 +48,34 @@ var requestHandler = function(request, response) {
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
+  // Tell the client we are sending them json
   headers['Content-Type'] = 'json';
+
+  const responseData = JSON.stringify({
+    msg: 'Hello, World!',
+    results: []
+  });
+
+  //Should answer GET requests for /classes/messages with a 200 status code
+  if (request.method === 'GET' && request.url.includes('/classes/messages')) {
+    console.log('GET request received to classes/messages!');
+    // The outgoing status.
+    var statusCode = 200;
+  } else if (
+    request.method === 'POST' &&
+    request.url.includes('/classes/messages')
+  ) {
+    //Should answer POST requests for /classes/messages with a 200 status code
+    //add messages to memory
+    //respond with messages that were previously posted
+    statusCode = 201;
+    memory.push(request);
+    console.log(memory.length);
+    console.log('POST request received to classes/messages!');
+  } else {
+    //everything that isn't classes/messages is 404
+    statusCode = 404;
+  }
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -69,12 +88,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(
-    JSON.stringify({
-      msg: 'Hello, World!',
-      results: []
-    })
-  );
+  response.end(responseData);
 };
 
 //export requestHandler
