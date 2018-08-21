@@ -55,30 +55,34 @@ const handler = {
 
     const responseData = JSON.stringify({
       msg: 'Hello, World!',
-      results: []
+      results: memory
     });
 
     //Should answer GET requests for /classes/messages with a 200 status code
     if (request.method === 'GET' && request.url.includes('/classes/messages')) {
       console.log('GET request received to classes/messages!');
       var statusCode = 200;
-      //TBD return memory object with previous messages
     } else if (
       request.method === 'POST' &&
       request.url.includes('/classes/messages')
     ) {
-      //Should answer POST requests for /classes/messages with a 200 status code
-      //add messages to memory
-      //respond with messages that were previously posted
-      console.log('POST request received to classes/messages!');
       statusCode = 201;
-      //var messages = JSON.parse(res._data).results;
-      // var body = '';
-      // request.on('data', function(data) {
-      //   body += data;
-      // });
-      memory.push(request); //TBD push message obj to memory
-      console.log(memory.length); //memory[memory.length - 1],
+
+      //TBD understand the magic below
+      //********************* */
+      let body = [];
+      request
+        .on('data', function(chunk) {
+          body.push(chunk);
+        })
+        .on('end', function() {
+          body = Buffer.concat(body).toString();
+          if (body) {
+            memory.push(JSON.parse(body));
+          }
+          responseData.results = memory;
+        });
+      //********************* */
     } else {
       //everything that isn't classes/messages is 404
       statusCode = 404;
@@ -95,6 +99,8 @@ const handler = {
     //
     // Calling .end "flushes" the response's internal buffer, forcing
     // node to actually send all the data over to the client.
+    console.log('responseData:', responseData);
+    console.log('memory:', memory); //data not in where it should be for GET reqs
     response.end(responseData);
   }
 };
