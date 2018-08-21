@@ -1,3 +1,5 @@
+// let moment = require('moment');
+
 var app = {
   //TODO: The current 'handleUsernameClick' function just toggles the class 'friend'
   //to all messages sent by the user
@@ -170,7 +172,9 @@ var app = {
     }
 
     var $message = $('<br><span/>');
-    $message.text(message.text).appendTo($chat);
+    $message
+      .text(message.text + ' ' + moment(message.date).fromNow())
+      .appendTo($chat);
 
     // Add the message to the UI
     app.$chats.append($chat);
