@@ -32,6 +32,7 @@ const handler = {
       'Serving request type ' + request.method + ' for url ' + request.url
     );
 
+    // See the note below about CORS headers.
     // These headers will allow Cross-Origin Resource Sharing (CORS).
     // This code allows this server to talk to websites that
     // are on different domains, for instance, your chat client.
@@ -47,44 +48,53 @@ const handler = {
       'access-control-allow-headers': 'content-type, accept',
       'access-control-max-age': 10 // Seconds.
     };
-    // See the note below about CORS headers.
     var headers = defaultCorsHeaders;
 
     // Tell the client we are sending them json
     headers['Content-Type'] = 'json';
 
     const responseData = JSON.stringify({
-      msg: 'Hello, World!',
       results: memory
     });
 
-    //Should answer GET requests for /classes/messages with a 200 status code
-    if (request.method === 'GET' && request.url.includes('/classes/messages')) {
-      console.log('GET request received to classes/messages!');
-      var statusCode = 200;
+    let statusCode;
+    if (request.method === 'OPTIONS') {
+      statusCode = 201;
+    } else if (
+      //Should answer GET requests for /classes/messages with a 200 status code
+      request.method === 'GET' &&
+      request.url.includes('/classes/messages')
+    ) {
+      // console.log('GET request received to classes/messages!');
+      statusCode = 200;
     } else if (
       request.method === 'POST' &&
       request.url.includes('/classes/messages')
     ) {
       statusCode = 201;
 
-      //TBD understand the magic below
-      //********************* */
+      //parse data from request in chunks
+      //TBD refactor cleaner
       let body = [];
       request
+        //TBD research .on function
         .on('data', function(chunk) {
           body.push(chunk);
         })
         .on('end', function() {
-          body = Buffer.concat(body).toString();
           if (body) {
             memory.push(JSON.parse(body));
           }
           responseData.results = memory;
         });
-      //********************* */
     } else {
       //everything that isn't classes/messages is 404
+      console.log(
+        'Poorly handled request or invalid endpoint 404 while serving request type ' +
+          request.method +
+          ' for url ' +
+          request.url
+      );
       statusCode = 404;
     }
 
@@ -99,8 +109,8 @@ const handler = {
     //
     // Calling .end "flushes" the response's internal buffer, forcing
     // node to actually send all the data over to the client.
-    console.log('responseData:', responseData);
-    console.log('memory:', memory); //data not in where it should be for GET reqs
+    // console.log('responseData:', responseData);
+    // console.log('memory:', memory); //data not in where it should be for GET reqs
     response.end(responseData);
   }
 };
