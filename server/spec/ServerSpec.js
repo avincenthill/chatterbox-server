@@ -117,4 +117,27 @@ describe('Node Server Request Listener Function', function() {
       }
     );
   });
+
+  //custom test #1
+  it('Should answer OPTIONS requests for /classes/messages with a 201 status code', function() {
+    var req = new stubs.request('/classes/messages', 'OPTIONS');
+    var res = new stubs.response();
+
+    handler.requestHandler(req, res);
+
+    expect(res._responseCode).to.equal(201);
+    expect(res._ended).to.equal(true);
+  });
+
+  //custom test #2
+  //handle request errors?
+  // it('Should answer OPTIONS requests for /classes/messages with a 201 status code', function() {
+  //   var req = new stubs.request('/classes/messages', 'OPTIONS');
+  //   var res = new stubs.response();
+
+  //   handler.requestHandler(req, res);
+
+  //   expect(res._responseCode).to.equal(201);
+  //   expect(res._ended).to.equal(true);
+  // });
 });

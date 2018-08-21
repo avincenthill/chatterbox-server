@@ -72,7 +72,6 @@ const handler = {
       request.url.includes('/classes/messages')
     ) {
       statusCode = 201;
-
       //parse data from request in chunks
       //TBD refactor cleaner
       let body = [];
@@ -87,6 +86,10 @@ const handler = {
           }
           responseData.results = memory;
         });
+      //   .on('error'),
+      // function(e) {
+      //   console.log('POST request error: ' + e);
+      // };
     } else {
       //everything that isn't classes/messages is 404
       console.log(
