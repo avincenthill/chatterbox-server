@@ -1,3 +1,6 @@
+#ignore test data
+*.txt
+
 ### OSX ###
 .DS_Store
 .AppleDouble

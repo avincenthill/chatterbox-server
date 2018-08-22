@@ -1,5 +1,7 @@
 var request = require('request');
 var expect = require('chai').expect;
+var hugeMessage = require('./bigfile');
+const fs = require('fs');
 
 describe('server', function() {
   it('should respond to GET requests for /classes/messages with a 200 status code', function(done) {
@@ -128,18 +130,13 @@ describe('server', function() {
 
   //custom test #3
   it('should handle huge messages correctly', function(done) {
-    let message = fs.readFile('./bigfile447M.txt', (err, data) => {
-      if (err) {
-        throw err;
-      }
-      res.end(data);
-    });
+    let message = hugeMessage;
 
     var requestParams = {
       method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
       json: {
-        username: 'AVH',
+        username: 'User who tests huge messages',
         text: message
       }
     };
@@ -155,6 +152,34 @@ describe('server', function() {
         expect(messages[0].text).to.exist;
         done();
       });
+    });
+  });
+
+  //custom test #4
+  it('should GET messages by decreasing date ("oldest") if queried', function(done) {
+    request('http://127.0.0.1:3000/classes/messages', function(
+      error,
+      response,
+      body
+    ) {
+      var messages = JSON.parse(body).results;
+      console.log('message', messages);
+      expect(messages[0].index).to.equal(0);
+      done();
+    });
+  });
+
+  //custom test #4
+  it('should GET messages by increasing date ("first") if queried', function(done) {
+    request('http://127.0.0.1:3000/classes/messages?order=-createdAt', function(
+      error,
+      response,
+      body
+    ) {
+      var messages = JSON.parse(body).results;
+      console.log('message', messages);
+      expect(messages[0].index).to.equal(3);
+      done();
     });
   });
 });
